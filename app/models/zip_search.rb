@@ -1,0 +1,2 @@
+class ZipSearch < ApplicationRecord
+end

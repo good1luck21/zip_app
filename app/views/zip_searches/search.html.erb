@@ -1,0 +1,59 @@
+<h1>郵便番号登録</h1>
+<%= form_for @zip, url:{controller: :zip_searches, action: :create}, id: 'new_zip_search' , local: true do |f| %>
+<%= f.label :zip_code %>
+<%= f.text_field :zip_code, id:'zip_code'%>
+<%= f.submit "登録", :id => 'submit' %>
+<% end %>
+
+<script>
+  $("#new_zip_search").on("submit", function(e) {
+    e.preventDefault();
+    let inputZip = {
+      zipcode: $("#zip_code").val()
+    };
+    let send_url = "http://zipcloud.ibsnet.co.jp/api/search";
+    $.ajax({
+      type: "GET",
+      cache: false,
+      data: inputZip,
+      url: send_url,
+      dataType: "jsonp",
+      success: function(res) {
+        if (res.status == 200) {
+          var post_data = {};
+          for (var i = 0; i < res.results.length; i++) {
+            var result = res.results[i];
+            console.log(res.results);
+            post_data['prefecture_code'] = result.prefcode;
+            post_data['prefecture_name'] = result.address1;
+            post_data['city'] = result.address2;
+            post_data['other'] = result.address3;
+            console.log(post_data)
+          }
+          createZip(post_data);
+        } else {
+          console.log(res.message);
+        }
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+        console.log(XMLHttpRequest);
+      }
+    })
+  })
+
+  function createZip(params) {
+    $.ajax({
+        url: "/create",
+        type: "POST",
+        data: {
+          zip_search: params
+        }
+      })
+      .done(function() {
+        console.log("succcess");
+      })
+      .fail(function() {
+        console.log("failed");
+      })
+  }
+</script>
